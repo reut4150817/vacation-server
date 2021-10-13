@@ -1,6 +1,7 @@
 const service = require('../service/vactionSearch.service')
 const Manager = require('../models/Manager')
 const User = require('../models/User')
+const path = require("path");
 
 //שמירת משתמש חדש במסד הנתונים
 const saveNewUser = async (req, res, next) => {
@@ -42,11 +43,33 @@ const saveNewManager = async (req, res, next) => {
     }
 }
 
+const uploadImage = async (req, res, next) => {
+    try {
+        console.log(req);
+        console.log("uploadImageeeeeee");
+
+        let file = req.files.file;
+        console.log("file" + file);
+        const newpath = path.join(
+            __dirname,
+            "../assets",
+            req.files.file.name)
+
+        file.mv(newpath)
+        res.status(200).json({ messages: 'the file was uploaded successfully', linkImage: `http://localhost:${process.env.port}/assets/${req.files.file.name}` })
+    }
+    catch (err) {
+        console.log("bbbbbbbbbbb");
+        res.status(400).send(err.message)
+    }
+}
 
 //  שמירת דירה חדשה בדירות חדשות שמחכות לאישור המנהל
 const saveNewItem = async (req, res, next) => {
     try {
         console.log("save Apartment");
+
+
         let apartment = await service.saveNewItem(req.body)
         res.status(200).json(apartment)
     }
@@ -75,6 +98,27 @@ const additionToApartments = async (req, res, next) => {
         res.status(400).send(err.message)
     }
 }
+
+
+const additionToSubscribers = async (req, res, next) => {
+    try {
+        console.log("save subscriber");
+        //  שמירת בעל מנוי חדש במסד נתונים לאחר שהמנהל אישר את הצטרפותו ושליחת מייל לבעל המנוי
+        await service.saveSubscriber(req.body)
+        // מחיקת מנוי מהמנויים שמחכים לאישור
+        let deleteSubscriber = await service.deleteSubscriber(req.body)
+        console.log(deleteSubscriber + "xxxxxxx");
+        console.log("get all apartmentNew");
+        const allSubscriberNew = await service.getAllSubscriberNew()
+        // await service.sendEmail(req.body)
+        res.status(200).json(allSubscriberNew)
+    }
+    catch (err) {
+        console.log(err + "xxxxxxx");
+        res.status(400).send(err.message)
+    }
+}
+
 
 
 const getAllArea = async (req, res, next) => {
@@ -177,6 +221,7 @@ const getAllApartmentArea = async (req, res, next) => {
 }
 
 
+//שליפת כל הדירות החדשות שעדין לא קיבלו אישור
 const getAllApartmentNew = async (req, res, next) => {
     try {
         console.log("get all apartmentNew");
@@ -188,6 +233,18 @@ const getAllApartmentNew = async (req, res, next) => {
     }
 }
 
+
+//שליפת כל המנויים החדשים שעדין לא קיבלו אישור
+const getAllSubscriberNew = async (req, res, next) => {
+    try {
+        console.log("get all apartmentNew");
+        const allSubscriberNew = await service.getAllSubscriberNew()
+        return res.status(200).json(allSubscriberNew)
+    }
+    catch (err) {
+        res.status(400).send(err.message)
+    }
+}
 
 // שליפת כל הדירות שבמאגר
 const getAllApartment = async (req, res, next) => {
@@ -259,6 +316,16 @@ const saveNewItemLiked = async (req, res, next) => {
     }
 }
 
+const sendEmail = async (req, res, next) => {
+    try {
+        console.log("  send email");
+        const email = await service.sendEmail(req.body)
+        return res.status(200).json(email)
+    }
+    catch (err) {
+        res.status(400).send(err.message)
+    }
+}
 module.exports = {
     saveNewUser,
     saveNewSubscriber,
@@ -271,13 +338,17 @@ module.exports = {
     getAllApartmentArea,
     getAllMessage,
     getAllApartmentNew,
+    getAllSubscriberNew,
+    additionToSubscribers,
     getAllApartment,
     getAllApartmentsLiked,
     connectU,
     connectM,
     getManager,
     deleteMessage,
-    saveNewItemLiked
+    saveNewItemLiked,
+    sendEmail,
+    uploadImage
 }
 
 

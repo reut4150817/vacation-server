@@ -18,6 +18,9 @@ const mongoose = require('mongoose');
 // const request = require("request");
 const router = require('./routes/api');
 const routerView = require('./routes/views');
+const path = require("path");
+
+const fileUpload = require("express-fileupload");
 // const User = require("./models/User");
 // const auth = require('./controllers/auth')
 
@@ -26,6 +29,10 @@ dotenv.config();
 app.use(cors());
 
 app.use(bodyParser.json());
+
+
+app.use("/assets", express.static(path.join(__dirname, "/assets")))
+app.use(fileUpload({ createParentPath: true }))
 
 app.use(bodyParser.urlencoded({
     extended: true

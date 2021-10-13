@@ -8,6 +8,7 @@ const nodemailer = require("nodemailer");
 const NewApartment = require('../models/NewApartment')
 const ApartmentAdd = require('../models/ApartmentAdd')
 const ApartmentsLiked = require('../models/ApartmentsLiked')
+const NewSubscriber = require('../models/NewSubscriber')
 
 //שמירת משתמש חדש במסד הנתונים
 saveNewUser = (data) => {
@@ -35,7 +36,7 @@ saveNewUser = (data) => {
 saveNewSubscriber = (data) => {
     return new Promise(async (resolve, reject) => {
         try {
-            let newSubscriber = new Subscriber(
+            let newSubscriber = new NewSubscriber(
                 data
             )
             await repository.saveObject(newSubscriber)
@@ -114,6 +115,57 @@ saveItem = (data) => {
 }
 
 
+// שמירת בעל מנוי חדש במסד נתונים לאחר שהמנהל אישר את הצטרפותו
+saveSubscriber = (data) => {
+    return new Promise(async (resolve, reject) => {
+        var transporter = nodemailer.createTransport({
+            service: 'gmail',
+            auth: {
+                user: 'D03N08@gmail.com',
+                pass: 'D03080527D'
+            }
+        });
+
+        var mailOption = {
+            from: 'D03N08@gmail.com',
+            to: data.email,
+            subject: "Hello ✔ " + data.LastName + " !", // Subject line
+            html: "<h2><b> !שלום רב</b></h2>" +
+                "<h3> תודה שנרשמת לנופש באתר </h3>" +
+                "<h3> הרשמתך בתור מנוי נקלטה בהצלחה </h3>" +
+                "<h3>השם משתמש שלך הינו השם עימו נרשמת לאתר</h3> " +
+                "<h3> סיסמתך היא :data.password </h3>" +
+                " <h3>המשך יום טוב</h3>",
+            // text: "Hello world?", // plain text body
+            // text: "<b>Hello world?</b>", // html body
+
+            //  "Hello world הצטרפת למאגר המנויים בהצלחה?", // plain text body
+            // html: "
+        }
+
+        transporter.sendMail(
+            mailOption, function (error, info) {
+                if (error) {
+                    console.log(error + "errrrrrrrrrrrrrrror");
+                }
+                else {
+                    console.log("email sennnnnnnnnnnnt" + info.response);
+                }
+            })
+        try {
+            let newASubscriber = new Subscriber(
+                data
+            )
+            await repository.saveObject(newASubscriber)
+            resolve(newASubscriber)
+        }
+        catch (err) {
+            reject(err.message)
+        }
+    })
+}
+
+
 getAllArea = () => {
     return new Promise(async (resolve, reject) => {
         try {
@@ -159,35 +211,35 @@ connectS = (name, password) => {
             // html: "<b>Hello world?</b>", // html body
             // }
             ////////////////שליחת מייל
-var transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-        user: 'D03N08@gmail.com',
-        // 'reut4150817@gmail.com'
-        pass: 'D03080527D'
-    }
-});
+            var transporter = nodemailer.createTransport({
+                service: 'gmail',
+                auth: {
+                    user: 'D03N08@gmail.com',
+                    // 'reut4150817@gmail.com'
+                    pass: 'D03080527D'
+                }
+            });
 
-var mailOption = {
-    // from: manager.managers.manager.email, // sender address
-    from: 'D03N08@gmail.com',
-    // to: subscriberEmail, // list of receivers
-    to: 'reut4150817@gmail.com',
-    // to: 'am0504104141@gmail.com',
-    subject: "Hello ✔", // Subject line
-    text: "Hello world?", // plain text body
-    // html: "
-}
-            
-                transporter.sendMail(
-                    mailOption, function (error, info) {
-                        if (error) {
-                            console.log(error +"errrrrrrrrrrrrrrror");
-                        }
-                        else {
-                            console.log("email sennnnnnnnnnnnt" + info.response);
-                        }
-                    })
+            var mailOption = {
+                // from: manager.managers.manager.email, // sender address
+                from: 'D03N08@gmail.com',
+                // to: subscriberEmail, // list of receivers
+                to: 'reut4150817@gmail.com',
+                // to: 'am0504104141@gmail.com',
+                subject: "Hello ✔", // Subject line
+                text: "Hello world?", // plain text body
+                // html: "
+            }
+
+            transporter.sendMail(
+                mailOption, function (error, info) {
+                    if (error) {
+                        console.log(error + "errrrrrrrrrrrrrrror");
+                    }
+                    else {
+                        console.log("email sennnnnnnnnnnnt" + info.response);
+                    }
+                })
 
             resolve(data)
         }
@@ -277,11 +329,27 @@ getAllApartmentArea = (area) => {
 }
 
 
+//שליפת כל הדירות החדשות שעדין לא קיבלו אישור
 getAllApartmentNew = () => {
     return new Promise(async (resolve, reject) => {
         try {
             let allApartmaentNew = await repository.findObjectAll(NewApartment)
             resolve(allApartmaentNew)
+        }
+        catch (err) {
+            console.log(err)
+            reject(err)
+        }
+    });
+}
+
+
+//שליפת כל המנויים החדשים שעדין לא קיבלו אישור
+getAllSubscriberNew = () => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let allSubscriberNew = await repository.findObjectAll(NewSubscriber)
+            resolve(allSubscriberNew)
         }
         catch (err) {
             console.log(err)
@@ -391,6 +459,61 @@ deleteApartment = (apartment) => {
     })
 }
 
+
+// מחיקת מנוי מהמנויים שמחכים לאישור
+deleteSubscriber = (subscriber) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let deleteSubscriber = await repository.findObjectByIdAndDelete(NewSubscriber,
+                subscriber
+            )
+            resolve(deleteSubscriber)
+        }
+        catch (err) {
+            console.log(err)
+            reject(err)
+        }
+    })
+}
+
+
+
+sendEmail = (name) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            var transporter = nodemailer.createTransport({
+                service: 'gmail',
+                auth: {
+                    user: 'D03N08@gmail.com',
+                    pass: 'D03080527D'
+                }
+            });
+
+            var mailOption = {
+                from: 'D03N08@gmail.com',
+                to: name.email,
+                subject: "Hello ✔", // Subject line
+                text: "Hello world הצטרפת למאגר המנויים בהצלחה?", // plain text body
+            }
+
+            transporter.sendMail(
+                mailOption, function (error, info) {
+                    if (error) {
+                        console.log(error + "errrrrrrrrrrrrrrror");
+                    }
+                    else {
+                        console.log("email sennnnnnnnnnnnt" + info.response);
+                    }
+                })
+
+            resolve(data)
+        }
+        catch (err) {
+            console.log(err)
+            reject(err)
+        }
+    })
+}
 module.exports = {
     saveNewUser,
     saveNewSubscriber,
@@ -398,6 +521,7 @@ module.exports = {
     addToMessages,
     saveNewItem,
     saveItem,
+    saveSubscriber,
     getAllArea,
     connectS,
     connectU,
@@ -406,12 +530,15 @@ module.exports = {
     getAllUserApartment,
     getAllApartmentArea,
     getAllApartmentNew,
+    getAllSubscriberNew,
     getAllApartment,
     getAllApartmentsLiked,
     getManager,
     deleteMessage,
     saveNewItemLiked,
     deleteApartment,
+    deleteSubscriber,
+    sendEmail
 }
 
 // updateForm = (userName, data) => {
