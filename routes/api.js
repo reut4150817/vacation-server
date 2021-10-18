@@ -26,5 +26,6 @@ router.get('/getAllSubscriberNew', vactionController.getAllSubscriberNew)
 router.get('/getAllApartment', vactionController.getAllApartment)
 router.get('/getAllApartmentsLiked/:name/:password', vactionController.getAllApartmentsLiked)
 router.post('/saveNewItemLiked', vactionController.saveNewItemLiked)
+router.get('/getApartmentsCriteria', vactionController.getApartmentsCriteria)
 
 module.exports = router;

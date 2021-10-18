@@ -182,7 +182,18 @@ getFormsOfUser = (Model, user) => {
     })
 
 }
+getApartmentsCriteria = (Model, area, numBeds) => {
+    return new Promise((resolve, reject) => {
+        // console.log("username", userName)
+        Model.find({ area: area, numBeds: numBeds }, (err, apartments) => {
+            if (err) {
+                reject(err)
+            }
+            resolve(apartments)
+        })
+    })
 
+}
 
 module.exports = {
     saveObject,

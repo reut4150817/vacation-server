@@ -43,11 +43,46 @@ const saveNewManager = async (req, res, next) => {
     }
 }
 
+
+uploadMultipleFiles = async (req, res) => {
+    // const dateNow = Date.now();
+    console.log("arrive to uploadMultipleFiles");
+    console.log('req url^^^^^^^^^^^^^^^^' + req.get('host'));
+
+
+    filesData = [];
+    if (!req.files)
+        res.status(415).send("no files to Upload")
+
+    const files = Object.keys(req.files);
+    console.log('upload Files', req.files);
+    Promise.all(files.map(async (file, index) => {
+        let dateNow = Date.now()
+
+        let f = await uploadImage(file);
+        filesData.push(f)
+        console.log("after uploaded");
+    }
+    )).then(() => {
+        console.log("filesData:", filesData);
+        res.send({ message: "files upload succesfully", filesData })
+
+    }).catch((error) => {
+        console.log(error)
+        res.status(500).json({
+            message: error,
+        });
+    })
+
+}
+
+
+
 const uploadImage = async (req, res, next) => {
     try {
-        console.log(req);
+        // console.log(req);
         console.log("uploadImageeeeeee");
-
+        console.log(req.files);
         let file = req.files.file;
         console.log("file" + file);
         const newpath = path.join(
@@ -69,7 +104,7 @@ const saveNewItem = async (req, res, next) => {
     try {
         console.log("save Apartment");
 
-
+        console.log('ssss', req.body);
         let apartment = await service.saveNewItem(req.body)
         res.status(200).json(apartment)
     }
@@ -84,13 +119,15 @@ const additionToApartments = async (req, res, next) => {
     try {
         console.log("save Apartment");
         // שמירת דירה במאגר הדירות לאחר שהמנהל מאשר
-        await service.saveItem(req.body)
+        await service.addToMessages(req.body)
+
+        // await service.saveItem(req.body)
         // מחיקת דירה מהדירות החדשות
         let deleteApartment = await service.deleteApartment(req.body)
 
         let apartment = await service.getAllApartmentNew(req.body)
         // שמירת דירה שהתוספה למאגר הדירות לאחר שקיבלה אישור מהמנהל להודעות המנוי
-        await service.addToMessages(req.body)
+        // await service.addToMessages(req.body)
         res.status(200).json(apartment)
     }
     catch (err) {
@@ -293,6 +330,8 @@ const deleteMessage = async (req, res, next) => {
         console.log("delete Message");
         let name = req.params.name
         let password = req.params.password
+        await service.saveItem(req.body)
+
         // מחיקת הודעה כאשר בעל מנוי צפה בה
         let deleteMessage = await service.deleteMessage(name, password, req.body)
         res.status(200).json(deleteMessage)
@@ -316,6 +355,10 @@ const saveNewItemLiked = async (req, res, next) => {
     }
 }
 
+
+
+
+// שליחת מייל
 const sendEmail = async (req, res, next) => {
     try {
         console.log("  send email");
@@ -326,6 +369,21 @@ const sendEmail = async (req, res, next) => {
         res.status(400).send(err.message)
     }
 }
+
+
+const getApartmentsCriteria = async (req, res, next) => {
+    try {
+        console.log("get all Apartments Criteria");
+        // const username = req.params.name;
+        // const userpassword = req.params.password;
+        const userMessage = await service.getApartmentsCriteria(username, userpassword)
+        return res.status(200).json(userMessage)
+    }
+    catch (err) {
+        res.status(400).send(err.message)
+    }
+}
+
 module.exports = {
     saveNewUser,
     saveNewSubscriber,
@@ -348,7 +406,9 @@ module.exports = {
     deleteMessage,
     saveNewItemLiked,
     sendEmail,
-    uploadImage
+    uploadImage,
+    getApartmentsCriteria,
+    uploadMultipleFiles
 }
 
 

@@ -88,6 +88,7 @@ saveNewItem = (data) => {
             let newApartment = new NewApartment(
                 data
             )
+
             await repository.saveObject(newApartment)
             resolve(newApartment)
         }
@@ -130,12 +131,12 @@ saveSubscriber = (data) => {
             from: 'D03N08@gmail.com',
             to: data.email,
             subject: "Hello ✔ " + data.LastName + " !", // Subject line
-            html: "<h2><b> !שלום רב</b></h2>" +
-                "<h3> תודה שנרשמת לנופש באתר </h3>" +
-                "<h3> הרשמתך בתור מנוי נקלטה בהצלחה </h3>" +
-                "<h3>השם משתמש שלך הינו השם עימו נרשמת לאתר</h3> " +
-                "<h3> סיסמתך היא :data.password </h3>" +
-                " <h3>המשך יום טוב</h3>",
+            html: `<h2><b> שלום רב!</b></h2>
+                <h3> תודה שנרשמת לנופש באתר </h3>
+                <h3> הרשמתך בתור מנוי נקלטה בהצלחה </h3>
+                <h3>השם משתמש שלך הינו השם עימו נרשמת לאתר</h3>
+                <h3> סיסמתך היא ${data.password}</h3>
+                <h3>המשך יום טוב</h3>`,
             // text: "Hello world?", // plain text body
             // text: "<b>Hello world?</b>", // html body
 
@@ -513,6 +514,24 @@ sendEmail = (name) => {
             reject(err)
         }
     })
+}
+
+
+
+// שליפת כל הדירות שאהבתי לפי שם משתמש וסיסמא
+getApartmentsCriteria = (userName, password) => {
+    return new Promise(async (resolve, reject) => {
+        // console.log("Name", userName)
+        try {
+            let criter = req.body
+            let ApartmentLiked = await repository.getApartmentsCriteria(Apartment, criter.area, criter.numBeds)
+            resolve(ApartmentLiked)
+        }
+        catch (err) {
+            console.log(err)
+            reject(err)
+        }
+    });
 }
 module.exports = {
     saveNewUser,

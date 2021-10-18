@@ -3,31 +3,35 @@ const mongoose = require('mongoose')
 const newApartmentSchema = mongoose.Schema({
     nameUser: {
         type: String,
-        required: true
+        // required: true
     },
     passwordUser: {
         type: String,
-        required: true
+        // required: true
     },
     telUser: {
         type: String,
-        required: true
+        // required: true
+    },
+    images: {
+        type: String,
+        // required: true
     },
     area: {
         type: String,
-        required: true
+        // required: true
     },
     name: {
         type: String,
-        required: true
+        // required: true
     },
     city: {
         type: String,
-        required: true
+        // required: true
     },
     address: {
         type: String,
-        required: true
+        // required: true
     },
     floor: {
         type: Number
@@ -58,7 +62,7 @@ const newApartmentSchema = mongoose.Schema({
     },
     remark: {
         type: String,
-        required: true
+        // required: true
     }
 })
 module.exports = mongoose.model('NewApartment', newApartmentSchema)
